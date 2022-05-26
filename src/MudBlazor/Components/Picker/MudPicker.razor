@@ -34,7 +34,7 @@
              RequiredError="@RequiredError" 
              Error="@Error" 
              ErrorText="@ErrorText" 
-             @onclick="@(() => { if (!Editable) ToggleState(); })" 
+             @onclick="@(async() => { if (!Editable) await ToggleState(); })" 
              @onkeydown="HandleKeyDown" 
              />;
 

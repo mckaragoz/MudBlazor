@@ -204,7 +204,7 @@ namespace MudBlazor
 
             if (AutoClose == true)
             {
-                Close(false);
+                await Close(false);
             }
         }
 
@@ -513,12 +513,12 @@ namespace MudBlazor
                 if (PickerVariant != PickerVariant.Static)
                 {
                     await Task.Delay(ClosingDelay);
-                    Close(false);
+                    await Close(false);
                 }
             }
         }
 
-        protected internal override void HandleKeyDown(KeyboardEventArgs obj)
+        protected internal override async void HandleKeyDown(KeyboardEventArgs obj)
         {
             if (Disabled || ReadOnly)
                 return;
@@ -614,12 +614,12 @@ namespace MudBlazor
                 case "NumpadEnter":
                     if (!IsOpen)
                     {
-                        Open();
+                        await Open();
                     }
                     else
                     {
                         Submit();
-                        Close();
+                        await Close();
                         _inputReference?.SetText(Text);
                     }
                     break;
@@ -628,12 +628,12 @@ namespace MudBlazor
                     {
                         if (!IsOpen)
                         {
-                            Open();
+                            await Open();
                         }
                         else
                         {
                             Submit();
-                            Close();
+                            await Close();
                             _inputReference?.SetText(Text);
                         }
                     }

@@ -10,6 +10,7 @@ namespace MudBlazor
     public class MudDatePicker : MudBaseDatePicker
     {
         private DateTime? _selectedDate;
+        private DateTime? _backUpDate;
 
         /// <summary>
         /// Fired when the DateFormat changes.
@@ -92,7 +93,7 @@ namespace MudBlazor
                 if (PickerVariant != PickerVariant.Static)
                 {
                     await Task.Delay(ClosingDelay);
-                    Close(false);
+                    await Close(false);
                 }
             }
         }
@@ -117,6 +118,7 @@ namespace MudBlazor
             else
             {
                 CurrentView = (OpenTo)nextView;
+                _ = _inputReference.FocusAsync();
             }
         }
 
@@ -144,11 +146,12 @@ namespace MudBlazor
             }
         }
 
-        protected override void OnOpened()
+        protected override async Task OnOpened()
         {
             _selectedDate = null;
+            _backUpDate = Date;
 
-            base.OnOpened();
+            await base.OnOpened();
         }
 
         protected internal override async void Submit()
@@ -178,7 +181,7 @@ namespace MudBlazor
 
             if (AutoClose == true)
             {
-                Close(false);
+                await Close(false);
             }
         }
 
@@ -201,24 +204,66 @@ namespace MudBlazor
             return calenderYear - diff;
         }
 
-        //To be completed on next PR
-        protected internal override void HandleKeyDown(KeyboardEventArgs obj)
+        protected internal override async void HandleKeyDown(KeyboardEventArgs obj)
         {
             if (Disabled || ReadOnly)
                 return;
             base.HandleKeyDown(obj);
+            int _yearChange = 0;
             switch (obj.Key)
             {
                 case "ArrowRight":
-                    if (IsOpen)
+                    if (Date.HasValue && Editable == false)
                     {
-
+                        if (obj.ShiftKey == true)
+                        {
+                            Date = Date.Value.AddMonths(1);
+                        }
+                        else if (obj.CtrlKey == true)
+                        {
+                            Date = Date.Value.AddYears(1);
+                            _yearChange = 1;
+                        }
+                        else if (IsOpen && Date.HasValue)
+                        {
+                            if (CurrentView == OpenTo.Month)
+                            {
+                                Date = Date.Value.AddMonths(1);
+                                PickerMonth = new DateTime(Date.Value.Year, Date.Value.Month, 1);
+                                //return;
+                            }
+                            else if (CurrentView == OpenTo.Date)
+                            {
+                                Date = Date.Value.AddDays(1);
+                            }
+                        }
                     }
                     break;
                 case "ArrowLeft":
-                    if (IsOpen)
+                    if (Date.HasValue && Editable == false)
                     {
-
+                        if (obj.ShiftKey == true)
+                        {
+                            Date = Date.Value.AddMonths(-1);
+                        }
+                        else if (obj.CtrlKey == true)
+                        {
+                            Date = Date.Value.AddYears(-1);
+                            _yearChange = -1;
+                        }
+                        else if (IsOpen && Date.HasValue)
+                        {
+                            if (CurrentView == OpenTo.Month)
+                            {
+                                Date = Date.Value.AddMonths(-1);
+                                PickerMonth = new DateTime(Date.Value.Year, Date.Value.Month, 1);
+                                //return;
+                            }
+                            else if (CurrentView == OpenTo.Date)
+                            {
+                                Date = Date.Value.AddDays(-1);
+                            }
+                        }
                     }
                     break;
                 case "ArrowUp":
@@ -230,13 +275,23 @@ namespace MudBlazor
                     {
                         IsOpen = false;
                     }
-                    else if (obj.ShiftKey == true)
+                    else if (Date.HasValue)
                     {
-                        
-                    }
-                    else
-                    {
-                        
+                        if (CurrentView == OpenTo.Year)
+                        {
+                            Date = Date.Value.AddYears(-1);
+                            _yearChange = -1;
+                        }
+                        else if (CurrentView == OpenTo.Month)
+                        {
+                            Date = Date.Value.AddMonths(-3);
+                            PickerMonth = new DateTime(Date.Value.Year, Date.Value.Month, 1);
+                            //return;
+                        }
+                        else if (CurrentView == OpenTo.Date)
+                        {
+                            Date = Date.Value.AddDays(-7);
+                        }
                     }
                     break;
                 case "ArrowDown":
@@ -244,29 +299,76 @@ namespace MudBlazor
                     {
                         IsOpen = true;
                     }
-                    else if (obj.ShiftKey == true)
+                    else if (Date.HasValue)
                     {
-                        
+                        if (CurrentView == OpenTo.Year)
+                        {
+                            Date = Date.Value.AddYears(1);
+                            _yearChange = 1;
+                        }
+                        else if (CurrentView == OpenTo.Month)
+                        {
+                            Date = Date.Value.AddMonths(3);
+                            PickerMonth = new DateTime(Date.Value.Year, Date.Value.Month, 1);
+                            //return;
+                        }
+                        else if (CurrentView == OpenTo.Date)
+                        {
+                            Date = Date.Value.AddDays(7);
+                        }
                     }
-                    else
+                    break;
+
+                case "Home":
+                    if (Date.HasValue && Editable == false)
                     {
-                        
+                        Date = Date.Value.AddMonths(1);
+                    }
+                    break;
+                case "End":
+                    if (Date.HasValue && Editable == false)
+                    {
+                        Date = Date.Value.AddMonths(-1);
+                    }
+                    break;
+                case "PageUp":
+                    if (Date.HasValue && Editable == false)
+                    {
+                        Date = Date.Value.AddYears(1);
+                        _yearChange = 1;
+                    }
+                    break;
+                case "PageDown":
+                    if (Date.HasValue && Editable == false)
+                    {
+                        Date = Date.Value.AddYears(-1);
+                        _yearChange = -1;
                     }
                     break;
                 case "Escape":
-                    ReturnDateBackUp();
+                    ReturnBackUpDate();
+                    await Close();
                     break;
                 case "Enter":
                 case "NumpadEnter":
                     if (!IsOpen)
                     {
-                        Open();
+                        await Open();
                     }
                     else
                     {
-                        Submit();
-                        Close();
-                        _inputReference?.SetText(Text);
+                        var nextView = GetNextView();
+                        if (nextView == null)
+                        {
+                            Submit();
+                            _backUpDate = Date;
+                            await Close();
+                            _inputReference?.SetText(Text);
+                        }
+                        else
+                        {
+                            CurrentView = (OpenTo)nextView;
+                        }
                     }
                     break;
                 case " ":
@@ -274,22 +376,52 @@ namespace MudBlazor
                     {
                         if (!IsOpen)
                         {
-                            Open();
+                            await Open();
                         }
                         else
                         {
                             Submit();
-                            Close();
+                            _backUpDate = Date;
+                            await Close();
                             _inputReference?.SetText(Text);
                         }
                     }
                     break;
             }
+            SetPickerMonthByCurrentDate(_yearChange);
+            if (CurrentView == OpenTo.Year)
+            {
+                ScrollToYear();
+            }
         }
 
-        private void ReturnDateBackUp()
+        private void SetPickerMonthByCurrentDate(int yearChange)
         {
-            Close();
+            if (Date.HasValue)
+            {
+                if (PickerMonth == null)
+                {
+                    PickerMonth = Date;
+                }
+
+                if (yearChange != 0)
+                {
+                    PickerMonth = PickerMonth.Value.AddYears(yearChange);
+                }
+                else if (PickerMonth.Value.StartOfMonth(Culture) > Date)
+                {
+                    PickerMonth = GetMonthStart(0).AddDays(-1).StartOfMonth(Culture);
+                }
+                else if (PickerMonth.Value.EndOfMonth(Culture) < Date)
+                {
+                    PickerMonth = GetMonthEnd(0).AddYears(yearChange).AddDays(1);
+                }
+            }
+        }
+
+        private void ReturnBackUpDate()
+        {
+            Date = _backUpDate;
         }
 
         /// <summary>

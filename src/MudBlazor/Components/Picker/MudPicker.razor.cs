@@ -338,15 +338,15 @@ namespace MudBlazor
 
         protected bool IsOpen { get; set; }
 
-        public void ToggleOpen()
+        public async Task ToggleOpen()
         {
             if (IsOpen)
-                Close();
+                await Close();
             else
-                Open();
+                await Open();
         }
 
-        public void Close(bool submit = true)
+        public async Task Close(bool submit = true)
         {
             IsOpen = false;
 
@@ -355,18 +355,18 @@ namespace MudBlazor
                 Submit();
             }
 
-            OnClosed();
+            await OnClosed();
             StateHasChanged();
         }
 
-        public void Open()
+        public async Task Open()
         {
             IsOpen = true;
             StateHasChanged();
-            OnOpened();
+            await OnOpened();
         }
 
-        private void CloseOverlay() => Close(PickerActions == null);
+        private async void CloseOverlay() => await Close(PickerActions == null);
 
         protected internal virtual void Submit() { }
 
@@ -374,7 +374,7 @@ namespace MudBlazor
         {
             if (close && PickerVariant != PickerVariant.Static)
             {
-                Close(false);
+                Close(false).AndForget();
             }
         }
 
@@ -435,30 +435,30 @@ namespace MudBlazor
                         new KeyOptions { Key = "/./", SubscribeDown = true, SubscribeUp = true }, // for our users
                     },
                 });
-                _keyInterceptor.KeyDown += HandleKeyDown;
+                //_keyInterceptor.KeyDown += HandleKeyDown;
             }
 
             await base.OnAfterRenderAsync(firstRender);
         }
 
-        protected internal void ToggleState()
+        protected internal async Task ToggleState()
         {
             if (Disabled)
                 return;
             if (IsOpen)
             {
                 IsOpen = false;
-                OnClosed();
+                await OnClosed();
             }
             else
             {
                 IsOpen = true;
-                OnOpened();
-                FocusAsync();
+                await OnOpened();
+                await FocusAsync();
             }
         }
 
-        protected virtual async void OnOpened()
+        protected virtual async Task OnOpened()
         {
             OnPickerOpened();
 
@@ -470,11 +470,13 @@ namespace MudBlazor
             await _keyInterceptor.UpdateKey(new() { Key = "Escape", StopDown = "key+none" });
         }
 
-        protected virtual void OnClosed()
+        protected virtual Task OnClosed()
         {
             OnPickerClosed();
-
+            
+            //await Task.Delay(1);
             _keyInterceptor.UpdateKey(new() { Key = "Escape", StopDown = "none" });
+            return Task.CompletedTask;
         }
 
         protected virtual void OnPickerOpened()
@@ -504,7 +506,7 @@ namespace MudBlazor
                     break;
                 case "Escape":
                 case "Tab":
-                    Close(false);
+                    Close(false).AndForget();
                     break;
             }
         }

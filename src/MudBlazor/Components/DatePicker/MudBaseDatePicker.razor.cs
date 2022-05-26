@@ -236,6 +236,7 @@ namespace MudBlazor
             CurrentView = OpenTo;
             if (CurrentView == OpenTo.Year)
                 _scrollToYearAfterRender = true;
+            _ = _inputReference.FocusAsync();
         }
 
         /// <summary>
@@ -325,7 +326,7 @@ namespace MudBlazor
                 if (PickerVariant != PickerVariant.Static)
                 {
                     await Task.Delay(ClosingDelay);
-                    Close(false);
+                    await Close(false);
                 }
             }
         }
@@ -348,6 +349,7 @@ namespace MudBlazor
             if (nextView != null)
             {
                 CurrentView = (OpenTo)nextView;
+                _ = _inputReference.FocusAsync();
             }
         }
 
@@ -363,6 +365,7 @@ namespace MudBlazor
             if (nextView != null)
             {
                 CurrentView = (OpenTo)nextView;
+                _ = _inputReference.FocusAsync();
             }
         }
 
@@ -374,6 +377,7 @@ namespace MudBlazor
             CurrentView = OpenTo.Month;
             _picker_month = _picker_month?.AddMonths(month);
             StateHasChanged();
+            _ = _inputReference.FocusAsync();
         }
 
         /// <summary>
@@ -423,21 +427,25 @@ namespace MudBlazor
                 return;
             }
             PickerMonth = GetMonthStart(0).AddDays(-1).StartOfMonth(Culture);
+            _ = _inputReference.FocusAsync();
         }
 
         private void OnNextMonthClick()
         {
             PickerMonth = GetMonthEnd(0).AddDays(1);
+            _ = _inputReference.FocusAsync();
         }
 
         private void OnPreviousYearClick()
         {
             PickerMonth = GetMonthStart(0).AddYears(-1);
+            _ = _inputReference.FocusAsync();
         }
 
         private void OnNextYearClick()
         {
             PickerMonth = GetMonthStart(0).AddYears(1);
+            _ = _inputReference.FocusAsync();
         }
 
         private void OnYearClick()
@@ -447,6 +455,7 @@ namespace MudBlazor
                 CurrentView = OpenTo.Year;
                 StateHasChanged();
                 _scrollToYearAfterRender = true;
+                _ = _inputReference.FocusAsync();
             }
         }
 

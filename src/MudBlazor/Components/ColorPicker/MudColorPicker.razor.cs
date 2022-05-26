@@ -285,7 +285,7 @@ namespace MudBlazor
             _collectionOpen = !_collectionOpen;
         }
 
-        private void SelectPaletteColor(MudColor color)
+        private async Task SelectPaletteColor(MudColor color)
         {
             Value = color;
             _collectionOpen = false;
@@ -293,7 +293,7 @@ namespace MudBlazor
             if (
                 IsAnyControlVisible() == false || ColorPickerView is ColorPickerView.GridCompact or ColorPickerView.Palette)
             {
-                Close();
+                await Close();
             }
         }
 
@@ -386,13 +386,13 @@ namespace MudBlazor
 
         #region mouse interactions
 
-        private void HandleColorOverlayClicked()
+        private async void HandleColorOverlayClicked()
         {
             UpdateColorBaseOnSelection();
 
             if (IsAnyControlVisible() == false)
             {
-                Close();
+                await Close();
             }
         }
 

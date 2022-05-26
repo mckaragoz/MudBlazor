@@ -249,15 +249,15 @@ namespace MudBlazor
                 if (PickerVariant != PickerVariant.Static)
                 {
                     await Task.Delay(ClosingDelay);
-                    Close(false);
+                    await Close(false);
                 }
             }
         }
 
-        protected override void OnOpened()
+        protected override async Task OnOpened()
         {
             _secondDate = null;
-            base.OnOpened();
+            await base.OnOpened();
         }
 
         protected internal override async void Submit()
