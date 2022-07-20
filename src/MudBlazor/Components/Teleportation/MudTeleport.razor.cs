@@ -24,14 +24,6 @@ namespace MudBlazor
         private bool? _disabled;
         private bool _mustUpdate = true;
 
-        private IJSObjectReference _module;
-
-        protected override void OnInitialized()
-        {
-            _to = To;
-            _disabled = Disabled;
-        }
-
         protected override void OnParametersSet()
         {
             // if `To` or `Disabled` has changed we must update the teleport
@@ -49,11 +41,6 @@ namespace MudBlazor
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
-            {
-                _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/MudBlazor/TScript/teleport.js");
-            }
-
             if (_mustUpdate)
             {
                 await Update();
@@ -63,9 +50,9 @@ namespace MudBlazor
 
         public async Task Update()
         {
-            if (_module is not null && !Disabled)
+            if (!Disabled)
             {
-                await _module.InvokeVoidAsync("teleport", _ref, To);
+                await JSRuntime.InvokeVoidAsync("mudTeleport.teleport", _ref, To);
             }
         }
 
@@ -73,19 +60,11 @@ namespace MudBlazor
         {
             try
             {
-                if (_module is not null)
-                {
-                    // FIXME: for some reason a tooltip inside a dialog keeps visible even if the
-                    // dialog was closed. The only way to remove it from the DOM is using JSInterop
-                    // since setting Disabled to true does not works. Probably there's a better way
-                    // to handle it.
-                    await _module.InvokeVoidAsync("removeFromDOM", _ref);
-                    await _module.DisposeAsync();
-                }
+                await JSRuntime.InvokeVoidAsync("mudTeleport.removeFromDOM", _ref);
             }
             catch (JSDisconnectedException) { }
             catch (TaskCanceledException) { }
-            // GC.SuppressFinalize(this);
+            catch (InvalidOperationException) { /* it throws in the server side project */ }
         }
     }
 }
