@@ -2,7 +2,7 @@
 
 <MudGrid>
     <MudItem xs="12">
-        <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">xs=12</MudPaper>
+        <MudPaper id="destination" Class="d-flex align-center justify-center mud-width-full py-8">xs=12</MudPaper>
     </MudItem>
     <MudItem xs="6">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">xs=6</MudPaper>
@@ -22,4 +22,8 @@
     <MudItem xs="3">
         <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">xs=3</MudPaper>
     </MudItem>
+
+    <MudTeleport To="#destination">
+        <MudButton>Teleported Button</MudButton>
+    </MudTeleport>
 </MudGrid>
