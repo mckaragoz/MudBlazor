@@ -410,6 +410,21 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Test]
+    public void AddMudTheme_ShouldRegisterServices()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddMudBlazorTheme();
+        var serviceProvider = services.BuildServiceProvider();
+        var themeService = serviceProvider.GetService<IThemeService>();
+
+        // Assert
+        themeService.Should().NotBeNull();
+    }
+
+    [Test]
     public void AddMudServices_ShouldRegisterAllServices()
     {
         // Arrange

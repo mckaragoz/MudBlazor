@@ -10,6 +10,7 @@ namespace MudBlazor.Docs.Shared
     public partial class MainLayout : LayoutComponentBase, IDisposable
     {
         [Inject] private LayoutService LayoutService { get; set; }
+        [Inject] private IThemeService ThemeService { get; set; }
 
         private MudThemeProvider _mudThemeProvider;
 

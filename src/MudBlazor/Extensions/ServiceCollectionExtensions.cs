@@ -38,6 +38,17 @@ namespace MudBlazor.Services
         }
 
         /// <summary>
+        /// Adds a Theme Service as a scoped instance.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddMudBlazorTheme(this IServiceCollection services)
+        {
+            services.TryAddScoped<IThemeService, ThemeService>();
+            return services;
+        }
+
+        /// <summary>
         /// Adds a Snackbar Service as a Scoped instance.
         /// </summary>
         /// <param name="services">IServiceCollection</param>
@@ -290,6 +301,7 @@ namespace MudBlazor.Services
             return services
                 .AddMudBlazorDialog()
                 .AddMudBlazorSnackbar()
+                .AddMudBlazorTheme()
                 .AddMudBlazorResizeListener()
                 .AddMudBlazorResizeObserver()
                 .AddMudBlazorResizeObserverFactory()
@@ -335,6 +347,7 @@ namespace MudBlazor.Services
                     snackBarConfiguration.BackgroundBlurred = options.SnackbarConfiguration.BackgroundBlurred;
                     snackBarConfiguration.SnackbarVariant = options.SnackbarConfiguration.SnackbarVariant;
                 })
+                .AddMudBlazorTheme()
                 .AddMudBlazorResizeListener(resizeOptions =>
                 {
                     resizeOptions.BreakpointDefinitions = options.ResizeOptions.BreakpointDefinitions;

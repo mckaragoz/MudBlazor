@@ -25,7 +25,7 @@ partial class MudThemingProvider : ComponentBase, IDisposable
 
     private event Func<bool, Task>? _darkLightModeChanged;
 
-    internal bool _isDarkMode;
+    //internal bool _isDarkMode;
 
     [Inject]
     private IJSRuntime JsRuntime { get; set; } = null!;
@@ -42,30 +42,23 @@ partial class MudThemingProvider : ComponentBase, IDisposable
     [Parameter]
     public bool DefaultScrollbar { get; set; }
 
-    /// <summary>
-    /// The active palette of the theme.
-    /// </summary>
-    [Parameter]
-    public bool IsDarkMode
-    {
-        get => _isDarkMode;
-        set
-        {
-            if (_isDarkMode == value)
-            {
-                return;
-            }
+    private bool _isDarkMode;
 
-            _isDarkMode = value;
-            IsDarkModeChanged.InvokeAsync(_isDarkMode);
-        }
+    internal void SetDarkMode(bool value)
+    {
+        _isDarkMode = value;
+        StateHasChanged();
     }
 
-    /// <summary>
-    /// Invoked when the dark mode changes.
-    /// </summary>
-    [Parameter]
-    public EventCallback<bool> IsDarkModeChanged { get; set; }
+    internal bool GetDarkMode()
+    {
+        return _isDarkMode;
+    }
+
+    internal void ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
 
     [DynamicDependency(nameof(SystemPreferenceChanged))]
     public MudThemingProvider()
@@ -101,6 +94,17 @@ partial class MudThemingProvider : ComponentBase, IDisposable
     protected override void OnInitialized()
     {
         Theme ??= new MudTheme();
+        ThemeService.Attach(this);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await ThemeService.SetSystemPreference();
+            StateHasChanged();
+        }
     }
 
     protected string BuildTheme()
